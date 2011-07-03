@@ -1,6 +1,14 @@
-Find your Congressional District by providing a US address OR if you're at home, let the browser's Geolocation API goodness find it for ya!. Depending on the browser's Geolocation API for mission critical application is not recommended since it is not always accurate.
+Find your Congressional District by providing a complete US address or a loose description of an address OR if you're at home, let the browser's Geolocation API goodness find your district for ya!. Note: Depending on the browser's Geolocation API for mission critical applications is not recommended since it is not always accurate.
 
 This has been tested only in Chrome 5+, FireFox 3.6+, and Safari 5+ on OS X 10.6+.
+
+Address Examples that return my district (CA, 30):
+1235 N. Kings Rd, West Hollywood, CA
+1235 Kings in West Hollywood, CA
+1235 Kings in West Hollywood
+Near Santa Monica Blvd and La Cienega
+At the corner of Kings Rd. and Fountain Ave.
+Near Basix Cafe in West Hollywood
 
 Components:
 example.html: Simple example of how to use the service

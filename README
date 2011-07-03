@@ -1,0 +1,16 @@
+Find your Congressional District by providing a US address OR if you're at home, let the browser's Geolocation API goodness find it for ya!. Depending on the browser's Geolocation API for mission critical application is not recommended since it is not always accurate.
+
+Components:
+example.html: Simple example of how to use the service
+README: You're looking at it
+sunlightlabs: Open Government project https://github.com/sunlightlabs
+
+Frontend Dependencies:
+YUI3: http://developer.yahoo.com/yui/3/
+Google Geocoding API: http://code.google.com/apis/maps/documentation/geocoding/
+
+Backend Dependencies:
+Sunlight Labs API
+
+Prerequisites:
+You need a Sunlight Labs API Key to use this example. You can get one at http://services.sunlightlabs.com/. When you get it, put it in sunlightlabs/class.sunlightlabs.php (there is a variable for it there.) 

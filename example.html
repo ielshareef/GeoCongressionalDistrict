@@ -1,0 +1,166 @@
+<!DOCTYPE html> 
+<html> 
+<head> 
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8"/> 
+	<title>Find my Congressional District</title> 
+	<style type="text/css" media="screen">
+		/* Tags */
+		body {
+			font-family: "HelveticaNeueLight","HelveticaNeue-Light","Helvetica Neue Light","HelveticaNeue","Helvetica Neue",'TeXGyreHerosRegular',"Helvetica","Tahoma","Geneva","Arial",sans-serif;
+			font-style: normal;
+			font-size:42px;
+			font-weight: 200;
+			margin: 0 auto;
+			width:850px;	
+		}
+		section {
+			margin-top:10px;
+		}
+		
+		section.spotlight {
+			border:1px dashed #000;
+			font-size:62px;
+			margin-top:50px;
+			padding: 50px;
+		}
+		section.spotlight .state_tag {
+			margin-left: 440px;
+		}
+		section.spotlight #state_value,
+		section.spotlight #district_value {
+			font-weight:bold;
+		}
+		section.address_form {
+			font-size:26px;
+			padding:10px 0; 
+		}
+		section.address_form #address {
+			font-family: "HelveticaNeueLight","HelveticaNeue-Light","Helvetica Neue Light","HelveticaNeue","Helvetica Neue",'TeXGyreHerosRegular',"Helvetica","Tahoma","Geneva","Arial",sans-serif;
+			font-size: 42px;
+			width: 844px;
+		}
+		section.status {
+			clear:both;
+			color: #ccc;
+			font-size:18px; 
+			font-style:italic;
+			padding-top:50px;
+		}
+		/* Classes */
+		.link {
+			background:#D5DDEB;
+			color: #000;
+			display:block;
+			font-size: 18px;
+			font-weight:bold;
+			padding:10px;
+			text-decoration: none;
+			-moz-border-radius: 15px;
+			border-radius: 15px;
+		}
+		.hidden {display:none;}
+	</style>
+</head> 
+<body> 	
+	<section class="spotlight">
+		<span class="state_tag">State: </span><span id="state_value">--</span><br />
+		<span>Congressional District: </span><span id="district_value">--</span>
+	</section>
+	<section class="address_form">
+	  	<span>Give us an idea of where about you live</span>
+	    <input id="address" type="textbox" placeholder=" ex. 1235 N. Kings, West Hollywood, CA"> 
+	</section>
+	<section> 
+	    <a id="start_geo" href="javascript:;" class="link" style="float:left;">Submit the address</a> 
+		<a id="start_browser_geo" href="javascript:;" class="link hidden" style="float:right;">...or, let the browser figure it out :)</a>
+	</section>
+	<section class="status">
+		<span id="status_updates"></span>
+	</section>
+	
+	<!-- External JS dependencies: YUI3 and Google Geocoding API -->
+	<script type="text/javascript" src="http://yui.yahooapis.com/3.3.0/build/yui/yui-min.js" charset="utf-8"></script>
+	<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false" charset="utf-8"></script> 
+	<script type="text/javascript"> 
+		// Instantiate YUI3 with base IO, JSON and node modules
+		YUI().use("io-base", "json-parse", "node", function(Y) {
+			
+			// Instantiate Google Geocoding object and cache commonly used objects
+			var geocoder = new google.maps.Geocoder();
+			var status = Y.one('#status_updates');
+			
+			// If browser support Geolocation API, enable call to action
+			if (navigator.geolocation) {
+				Y.one("#start_browser_geo").removeClass("hidden");
+			}
+			
+			// A callback function when AJAX is SUCCESS
+			var handleSuccess = function(ioId, o){
+				if(o.responseText){
+					var res = Y.JSON.parse(o.responseText);
+					if (res) {
+						Y.one('#state_value').set('innerHTML', res.state);
+						Y.one('#district_value').set('innerHTML', res.number);
+					} else {
+						status.set('innerHTML', 'Hmm, we didn\'t quite get that. Please try again.');
+					}
+				} else {
+					Y.one('#state_value').set('innerHTML', '--');
+					Y.one('#district_value').set('innerHTML', '--');
+				}
+				status.set('innerHTML', '');
+			}
+
+			// A callback function when AJAX is FAILURE
+			var handleFailure = function(ioId, o){
+				status.set('innerHTML', 'Error occurred in the browser. Please try again.');
+			}
+
+			// Subscribe to the callback functions above for AJAX operations
+			Y.on('io:success', handleSuccess);
+			Y.on('io:failure', handleFailure);
+
+			// Fire the AJAX call!
+			function makeRequest(lat, lng){
+				status.set('innerHTML', 'Requesting district from server...');
+				var request = Y.io("sunlightlabs/getDistrict.php", {
+					method: "POST",
+					data: "lng="+lng+"&lat="+lat,
+					headers: { 'X-Transaction': 'GeoCongressionalDistrict'}
+				});
+			}
+
+			// Get Latitude and Longitude from the browser's Geolocation API
+			function getLocationFromBrowser() {
+				Y.one('#state_value').set('innerHTML', '--');
+				Y.one('#district_value').set('innerHTML', '--');
+				status.set('innerHTML', 'Getting browser Lat/Long...');
+				navigator.geolocation.getCurrentPosition(function(pos) {
+					makeRequest(pos.coords.latitude, pos.coords.longitude);
+				});
+			}
+			
+			// Get Latitude and Longitude from Google Geocoding API
+			function getLocationFromGoogle() {			
+				Y.one('#state_value').set('innerHTML', '--');
+				Y.one('#district_value').set('innerHTML', '--');
+				status.set('innerHTML', 'Getting Lat/Long from Google...');
+				var addr_node = document.getElementById("address");
+				var address = addr_node.value || addr_node.placeholder;
+			    geocoder.geocode( { 'address': address}, function(results, stat) {
+			    	if (stat == google.maps.GeocoderStatus.OK) {
+						makeRequest(results[0].geometry.location.Ia, results[0].geometry.location.Ja);
+			      	} else {
+			        	status.set('innerHTML', 'Hmm, we didn\'t quite get that. Please try again.');
+			      	}
+			    });
+			}
+			
+			// Add listeners to both buttons
+			Y.on('click', getLocationFromGoogle, Y.one('#start_geo'));
+			Y.on('click', getLocationFromBrowser, Y.one('#start_browser_geo'));
+		}
+	);
+	</script>
+</body> 
+</html>

@@ -149,7 +149,7 @@
 				var address = addr_node.value || addr_node.placeholder;
 			    geocoder.geocode( { 'address': address}, function(results, stat) {
 			    	if (stat == google.maps.GeocoderStatus.OK) {
-						makeRequest(results[0].geometry.location.Ia, results[0].geometry.location.Ja);
+						makeRequest(results[0].geometry.location.Ja, results[0].geometry.location.Ka);
 			      	} else {
 			        	status.set('innerHTML', 'Hmm, we didn\'t quite get that. Please try again.');
 			      	}
